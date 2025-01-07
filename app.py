@@ -20,10 +20,8 @@ class Game:
         self.reset_button = Button(1100, 600, 100, 50, (255, 0, 0), "Reset")
         
         # Initialize player character
-        # self.character = Character(64, self.HEIGHT // 2 - 50 // 2, 50, 50, 100)
         self.character = Character(200, self.HEIGHT // 2)
 
-        
         # Initialize game variables
         self.shapes = []
         self.move_character = False
@@ -75,13 +73,13 @@ class Game:
                         if not self.move_character:
                             self.move_character = True
                             self.character.move()
-                            # shape = self.character.create_shape(self.shape_types[self.shape_index], self.shape_types, self.shape_index)
-                            shape = self.character.create_shape(self.screen)
+                            # Create shape above the character
+                            shape = Shape(self.character.x, self.character.y - 150, self.shape_types[self.shape_index])
                             self.shapes.append(shape)
                         else:
                             self.character.move()
-                            # shape = self.character.create_shape(self.shape_types[self.shape_index], self.shape_types, self.shape_index)
-                            shape = self.character.create_shape(self.screen)
+                            # Create shape above the character
+                            shape = Shape(self.character.x, self.character.y - 150, self.shape_types[self.shape_index])
                             self.shapes.append(shape)
                         
                         # Update the shape index to cycle through
@@ -99,13 +97,14 @@ class Game:
 
             # Drawing
             self.screen.fill((255, 255, 255))  # Clear the screen
-            if self.move_character:
-                pygame.draw.rect(self.screen, (0, 0, 255), (self.character.x, self.character.y, self.character.width, self.character.height))
 
-            # Draw the shapes
-            for shape in self.shapes:
-                # shape.draw(self.screen)
+            # Draw the character (stick man)
+            if self.move_character:
                 self.character.create_shape(self.screen)
+
+            # Draw the shapes above the character
+            for shape in self.shapes:
+                shape.draw(self.screen)
 
             # Draw buttons
             self.draw_buttons()
