@@ -7,7 +7,7 @@ pygame.init()
 # Screen dimensions
 WIDTH, HEIGHT = 1280, 720
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Character Movement with Thought Circles")
+pygame.display.set_caption("Chris Crook's CV")
 
 # Colors
 WHITE = (255, 255, 255)
@@ -17,14 +17,18 @@ RED = (255, 0, 0)
 # Character properties
 character_width = 50
 character_height = 50
-character_x = 100
+character_x = 64
 character_y = HEIGHT // 2 - character_height // 2
-character_speed = 10
+character_speed = 100
 
 # Buttons
-start_button_rect = pygame.Rect(50, 500, 100, 50)
-next_button_rect = pygame.Rect(200, 500, 100, 50)
-restart_button_rect = pygame.Rect(600, 500, 100, 50)
+start_button_rect = pygame.Rect(100, 600, 100, 50)
+next_button_rect = pygame.Rect(100, 600, 100, 50)
+reset_button_rect = pygame.Rect(1100, 600, 100, 50)
+
+# Next Button Clicks
+next_clicks = 0  # Counter to track how many times the Next button has been clicked
+max_next_clicks = 10  # Maximum number of Next button clicks allowed
 
 # Clock to control frame rate
 clock = pygame.time.Clock()
@@ -36,7 +40,8 @@ circles = []
 running = True
 move_character = False
 show_start_button = True
-show_restart_button = False
+show_next_button = False
+show_reset_button = False
 
 # Function to draw buttons
 def draw_buttons():
@@ -44,24 +49,27 @@ def draw_buttons():
         pygame.draw.rect(screen, RED, start_button_rect)
         start_text = pygame.font.Font(None, 24).render("Start", True, WHITE)
         screen.blit(start_text, start_text.get_rect(center=start_button_rect.center))
-    
-    pygame.draw.rect(screen, RED, next_button_rect)
-    next_text = pygame.font.Font(None, 24).render("Next", True, WHITE)
-    screen.blit(next_text, next_text.get_rect(center=next_button_rect.center))
 
-    if show_restart_button:
-        pygame.draw.rect(screen, RED, restart_button_rect)
-        restart_text = pygame.font.Font(None, 24).render("Restart", True, WHITE)
-        screen.blit(restart_text, restart_text.get_rect(center=restart_button_rect.center))
+    if show_next_button:
+        pygame.draw.rect(screen, RED, next_button_rect)
+        next_text = pygame.font.Font(None, 24).render("Next", True, WHITE)
+        screen.blit(next_text, next_text.get_rect(center=next_button_rect.center))
 
-# Function to restart the game state
-def restart_game():
-    global character_x, circles, move_character, show_start_button, show_restart_button
+    if show_reset_button:
+        pygame.draw.rect(screen, RED, reset_button_rect)
+        reset_text = pygame.font.Font(None, 24).render("Reset", True, WHITE)
+        screen.blit(reset_text, reset_text.get_rect(center=reset_button_rect.center))
+
+# Function to reset the game state
+def reset_game():
+    global character_x, circles, move_character, show_start_button, show_next_button, show_reset_button, next_clicks
     character_x = 100
     circles = []
     move_character = False
     show_start_button = True
-    show_restart_button = False
+    show_next_button = False  # Reset "Next" button visibility
+    show_reset_button = False
+    next_clicks = 0  # Reset the click counter so it can be used again
 
 # Game loop
 while running:
@@ -71,39 +79,53 @@ while running:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if show_start_button and start_button_rect.collidepoint(event.pos):
-                move_character = True
+                # When Start is clicked:
+                move_character = False  # Keep character still initially
                 show_start_button = False
-                show_restart_button = True
+                show_next_button = True  # Show the "Next" button after start
+                show_reset_button = True  # Show the reset button after start
 
-                # Move the character and add the first circle
-                character_x += character_speed
-                circle_x = character_x + character_width // 2
-                circle_y = character_y - 30  # Circle appears above the character
-                circles.append((circle_x, circle_y))
+            if show_next_button and next_button_rect.collidepoint(event.pos):
+                if next_clicks < max_next_clicks:
+                    next_clicks += 1  # Increment the counter
 
-            if next_button_rect.collidepoint(event.pos) and move_character:
-                # Move the character to the right
-                character_x += character_speed
+                    if not move_character:
+                        # First time clicking Next, show the circle and move character
+                        move_character = True  # Now we can start moving the character
+                        character_x += character_speed  # Move the character
+                        circle_x = character_x + character_width // 2
+                        circle_y = character_y - 30  # Circle appears above the character
+                        circles.append((circle_x, circle_y))  # Add the first circle
 
-                # Prevent the character from going off-screen
-                if character_x > WIDTH - character_width:
-                    character_x = WIDTH - character_width
+                    else:
+                        # Subsequent clicks of "Next" will move both the character and the circle
+                        character_x += character_speed  # Move the character
+                        if character_x > WIDTH - character_width:
+                            character_x = WIDTH - character_width  # Prevent going off-screen
+                        # Add a new circle above the new position of the character
+                        circle_x = character_x + character_width // 2
+                        circle_y = character_y - 30  # Circle appears above the character
+                        circles.append((circle_x, circle_y))  # Add the new circle
 
-                # Add a circle with information above the character's new position
-                circle_x = character_x + character_width // 2
-                circle_y = character_y - 30  # Circle appears above the character
-                circles.append((circle_x, circle_y))
+                else:
+                    # If the counter has reached the limit, stop further movement
+                    print("Maximum Next clicks reached!")
 
-            if show_restart_button and restart_button_rect.collidepoint(event.pos):
-                restart_game()
+                # After the click, check if the maximum number of Next clicks has been reached
+                if next_clicks >= max_next_clicks:
+                    show_next_button = False  # Hide the Next button after 10 clicks
+
+            if show_reset_button and reset_button_rect.collidepoint(event.pos):
+                reset_game()  # Call the reset function
 
     # Drawing
     screen.fill(WHITE)  # Clear the screen
 
-    # Draw the character
-    pygame.draw.rect(screen, BLUE, (character_x, character_y, character_width, character_height))
+    if move_character:  # Only draw the square if it should be visible
+        # Draw the character (blue square)
+        pygame.draw.rect(screen, BLUE, (character_x, character_y, character_width, character_height))
 
-    # Draw the circles
+    # Draw the circles if any exist
     for circle_pos in circles:
         x, y = circle_pos
         pygame.draw.circle(screen, RED, (x, y), 20)  # Draw circle
