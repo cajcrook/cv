@@ -1,189 +1,124 @@
 import pygame
 import sys
-from settings import Settings
+from button import Button
+from character import Character
+from shapes import Shape
 
+class Game:
+    def __init__(self):
+        pygame.init()
+        self.WIDTH, self.HEIGHT = 1280, 720
+        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        pygame.display.set_caption("Chris Crook's CV")
+        
+        self.clock = pygame.time.Clock()
+        self.running = True
+        
+        # Initialize buttons
+        self.start_button = Button(100, 600, 100, 50, (255, 0, 0), "Start")
+        self.next_button = Button(100, 600, 100, 50, (255, 0, 0), "Next")
+        self.reset_button = Button(1100, 600, 100, 50, (255, 0, 0), "Reset")
+        
+        # Initialize player character
+        # self.character = Character(64, self.HEIGHT // 2 - 50 // 2, 50, 50, 100)
+        self.character = Character(200, self.HEIGHT // 2)
 
-# Initialize Pygame
-def __init__(self):
-    pygame.init()
-    self.settings = Settings()
-    self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
+        
+        # Initialize game variables
+        self.shapes = []
+        self.move_character = False
+        self.show_start_button = True
+        self.show_next_button = False
+        self.show_reset_button = False
+        self.next_clicks = 0
+        self.max_next_clicks = 10
+        self.shape_types = ['circle_orange', 'circle_red', 
+                            'rectangle_yellow', 'triangle_green',
+                            'circle_yellow', 'rectangle_green', 
+                            'triangle_red', 'circle_green', 
+                            'rectangle_red', 'triangle_yellow']
+        self.shape_index = 0
 
+    def reset_game(self):
+        self.character.x = 100
+        self.shapes = []
+        self.move_character = False
+        self.show_start_button = True
+        self.show_next_button = False
+        self.show_reset_button = False
+        self.next_clicks = 0
+        self.shape_index = 0
 
-# Screen dimensions
-# WIDTH, HEIGHT = 1280, 720
-# screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Chris Crook's CV")
+    def draw_buttons(self):
+        if self.show_start_button:
+            self.start_button.draw(self.screen)
+        if self.show_next_button:
+            self.next_button.draw(self.screen)
+        if self.show_reset_button:
+            self.reset_button.draw(self.screen)
 
-# Colors
-WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-ORANGE = (255, 165, 0)
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
 
-# Character properties
-character_width = 50
-character_height = 50
-character_x = 64
-character_y = HEIGHT // 2 - character_height // 2
-character_speed = 100
-
-# Buttons
-
-# Button class
-class Button:
-    def __init__(self, x, y, width, height, color, text, font_size=24):
-        self.rect = pygame.Rect(x, y, width, height)
-        self.color = color
-        self.text = text
-        self.font = pygame.font.Font(None, font_size)
-    
-    def draw(self, screen):
-        # Draw button
-        pygame.draw.rect(screen, self.color, self.rect)
-        text_surface = self.font.render(self.text, True, WHITE)
-        screen.blit(text_surface, text_surface.get_rect(center=self.rect.center))
-    
-    def is_clicked(self, pos):
-        # Check if mouse click is inside the button
-        return self.rect.collidepoint(pos)
-
-# Next Button Clicks
-next_clicks = 0  # Counter to track how many times the Next button has been clicked
-max_next_clicks = 10  # Maximum number of Next button clicks allowed
-
-# Clock to control frame rate
-clock = pygame.time.Clock()
-
-# List to store shapes (position, shape_type)
-shapes = []  # This will store shape information (position and type)
-
-# Game state
-running = True
-move_character = False
-show_start_button = True
-show_next_button = False
-show_reset_button = False
-
-# Shape types
-shape_types = ['circle_orange', 'circle_red', 'circle_blue', 'circle_green',
-               'rectangle_red', 'rectangle_blue', 'rectangle_green', 
-               'triangle_red', 'triangle_blue', 'triangle_green']  # List of shapes to cycle through
-shape_index = 0  # Keeps track of which shape to draw
-
-# Create buttons
-start_button = Button(100, 600, 100, 50, RED, "Start")
-next_button = Button(100, 600, 100, 50, RED, "Next")
-reset_button = Button(1100, 600, 100, 50, RED, "Reset")
-
-# Function to reset the game state
-def reset_game():
-    global character_x, shapes, move_character, show_start_button, show_next_button, show_reset_button, next_clicks, shape_index
-    character_x = 100
-    shapes = []
-    move_character = False
-    show_start_button = True
-    show_next_button = False  # Reset "Next" button visibility
-    show_reset_button = False
-    next_clicks = 0  # Reset the click counter so it can be used again
-    shape_index = 0  # Reset the shape index to start with a circle
-
-# Game loop
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if show_start_button and start_button.is_clicked(event.pos):
-                # When Start is clicked:
-                move_character = False  # Keep character still initially
-                show_start_button = False
-                show_next_button = True  # Show the "Next" button after start
-                show_reset_button = True  # Show the reset button after start
-
-            if show_next_button and next_button.is_clicked(event.pos):
-                if next_clicks < max_next_clicks:
-                    next_clicks += 1  # Increment the counter
-
-                    if not move_character:
-                        # First time clicking Next, show the circle and move character
-                        move_character = True  # Now we can start moving the character
-                        character_x += character_speed  # Move the character
-                        shape_x = character_x + character_width // 2
-                        shape_y = character_y - 30  # Shape appears above the character
-                        shapes.append((shape_x, shape_y, shape_types[shape_index]))  # Add the first shape
-
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.show_start_button and self.start_button.is_clicked(event.pos):
+                    self.move_character = False
+                    self.show_start_button = False
+                    self.show_next_button = True
+                    self.show_reset_button = True
+                    
+                if self.show_next_button and self.next_button.is_clicked(event.pos):
+                    if self.next_clicks < self.max_next_clicks:
+                        self.next_clicks += 1
+                        if not self.move_character:
+                            self.move_character = True
+                            self.character.move()
+                            # shape = self.character.create_shape(self.shape_types[self.shape_index], self.shape_types, self.shape_index)
+                            shape = self.character.create_shape(self.screen)
+                            self.shapes.append(shape)
+                        else:
+                            self.character.move()
+                            # shape = self.character.create_shape(self.shape_types[self.shape_index], self.shape_types, self.shape_index)
+                            shape = self.character.create_shape(self.screen)
+                            self.shapes.append(shape)
+                        
+                        # Update the shape index to cycle through
+                        self.shape_index = (self.shape_index + 1) % len(self.shape_types)
                     else:
-                        # Subsequent clicks of "Next" will move both the character and the shape
-                        character_x += character_speed  # Move the character
-                        if character_x > WIDTH - character_width:
-                            character_x = WIDTH - character_width  # Prevent going off-screen
-                        # Add a new shape above the new position of the character
-                        shape_x = character_x + character_width // 2
-                        shape_y = character_y - 30  # Shape appears above the character
-                        shapes.append((shape_x, shape_y, shape_types[shape_index]))  # Add the new shape
+                        print("Maximum Next clicks reached!")
+                    if self.next_clicks >= self.max_next_clicks:
+                        self.show_next_button = False
+                if self.show_reset_button and self.reset_button.is_clicked(event.pos):
+                    self.reset_game()
 
-                        # Cycle through the shape types
-                        shape_index = (shape_index + 1) % len(shape_types)
+    def run(self):
+        while self.running:
+            self.handle_events()
 
-                else:
-                    # If the counter has reached the limit, stop further movement
-                    print("Maximum Next clicks reached!")
+            # Drawing
+            self.screen.fill((255, 255, 255))  # Clear the screen
+            if self.move_character:
+                pygame.draw.rect(self.screen, (0, 0, 255), (self.character.x, self.character.y, self.character.width, self.character.height))
 
-                # After the click, check if the maximum number of Next clicks has been reached
-                if next_clicks >= max_next_clicks:
-                    show_next_button = False  # Hide the Next button after 10 clicks
+            # Draw the shapes
+            for shape in self.shapes:
+                # shape.draw(self.screen)
+                self.character.create_shape(self.screen)
 
-            if show_reset_button and reset_button.is_clicked(event.pos):
-                reset_game()  # Call the reset function
+            # Draw buttons
+            self.draw_buttons()
 
-    # Drawing
-    screen.fill(WHITE)  # Clear the screen
+            # Update the screen
+            pygame.display.flip()
 
-    if move_character:  # Only draw the square if it should be visible
-        # Draw the character (blue square)
-        pygame.draw.rect(screen, BLUE, (character_x, character_y, character_width, character_height))
+            # Control the frame rate
+            self.clock.tick(60)
 
-    # Draw the shapes if any exist
-    for shape_pos in shapes:
-        x, y, shape_type = shape_pos
-        if shape_type == 'circle_orange':
-            pygame.draw.circle(screen, ORANGE, (x, y), 20)  # Draw circle
-        elif shape_type == 'circle_red':
-            pygame.draw.circle(screen, RED, (x, y), 20)  # Draw circle  
-        elif shape_type == 'rectangle_blue':
-            pygame.draw.rect(screen, BLUE, (x - 20, y - 20, 40, 40))  # Draw rectangle
-        elif shape_type == 'triangle_green':
-            pygame.draw.polygon(screen, GREEN, [(x, y - 20), (x - 20, y + 20), (x + 20, y + 20)])  # Draw triangle
-        elif shape_type == 'circle_blue':
-            pygame.draw.circle(screen, BLUE, (x, y), 20)  # Draw circle  
-        elif shape_type == 'rectangle_green':
-            pygame.draw.rect(screen, GREEN, (x - 20, y - 20, 40, 40))  # Draw rectangle
-        elif shape_type == 'triangle_red':
-            pygame.draw.polygon(screen, RED, [(x, y - 20), (x - 20, y + 20), (x + 20, y + 20)])  # Draw triangle
-        elif shape_type == 'circle_green':
-            pygame.draw.circle(screen, GREEN, (x, y), 20)  # Draw circle  
-        elif shape_type == 'rectangle_red':
-            pygame.draw.rect(screen, RED, (x - 20, y - 20, 40, 40))  # Draw rectangle
-        elif shape_type == 'triangle_blue':
-            pygame.draw.polygon(screen, BLUE, [(x, y - 20), (x - 20, y + 20), (x + 20, y + 20)])  # Draw triangle
-       
-    # Draw buttons
-    if show_start_button:
-        start_button.draw(screen)
-    if show_next_button:
-        next_button.draw(screen)
-    if show_reset_button:
-        reset_button.draw(screen)
+        pygame.quit()
+        sys.exit()
 
-    # Update the screen
-    pygame.display.flip()
-
-    # Control the frame rate
-    clock.tick(60)
-
-# Quit Pygame
-pygame.quit()
-sys.exit()
+if __name__ == "__main__":
+    game = Game()
+    game.run()
