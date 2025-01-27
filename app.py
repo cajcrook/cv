@@ -134,8 +134,9 @@ class Game:
                         # Maximum "Next" clicks reached
                         if self.next_clicks >= self.max_next_clicks:
                             self.show_next_button = False
-                    if self.show_reset_button and self.reset_button.is_clicked(event.pos):
-                        self.reset_game()
+                    
+                if self.show_reset_button and self.reset_button.is_clicked(event.pos):
+                    self.reset_game()
 
     def run(self):
         while self.running:
