@@ -30,11 +30,16 @@ class Game:
         self.show_reset_button = False
         self.next_clicks = 0
         self.max_next_clicks = 10
-        self.shape_types = ['circle_orange', 'circle_red', 
-                            'rectangle_yellow', 'triangle_green',
-                            'circle_yellow', 'rectangle_green', 
-                            'triangle_red', 'circle_green', 
-                            'rectangle_red', 'triangle_yellow']
+        self.shape_types = ['rectangle_blue', 'rectangle_blue', 
+                                'rectangle_blue', 'rectangle_blue', 
+                                'rectangle_blue', 'rectangle_blue', 
+                                'rectangle_blue', 'rectangle_blue', 
+                                    'rectangle_blue', 'rectangle_blue']
+        # ['circle_orange', 'circle_red', 
+        #                     'rectangle_yellow', 'triangle_green',
+        #                     'circle_yellow', 'rectangle_green', 
+        #                     'triangle_red', 'circle_green', 
+        #                     'rectangle_red', 'triangle_yellow']
         self.shape_index = 0
 
     def reset_game(self):
@@ -103,8 +108,8 @@ class Game:
                 self.character.create_shape(self.screen)
 
             # Draw the shapes above the character
-            for shape in self.shapes:
-                shape.draw(self.screen)
+            if self.shapes:  # Ensure there is at least one shape
+                self.shapes[-1].draw(self.screen)
 
             # Draw buttons
             self.draw_buttons()
