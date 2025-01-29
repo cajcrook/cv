@@ -109,11 +109,11 @@ class Game:
                         if not self.move_character:
                             self.move_character = True
                             self.character.move()  # Move the character to the next position
-                            shape = Shape(self.character.x, self.character.y - 100, self.settings.shape_types[self.shape_index])
+                            shape = Shape(self.character.x, self.character.y - 120, self.settings.shape_types[self.shape_index])
                             self.shapes.append(shape)
                         else:
                             self.character.move()
-                            shape = Shape(self.character.x, self.character.y - 100, self.settings.shape_types[self.shape_index])
+                            shape = Shape(self.character.x, self.character.y - 120, self.settings.shape_types[self.shape_index])
                             self.shapes.append(shape)
 
                         # Debug the created shape
