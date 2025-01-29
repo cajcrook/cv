@@ -10,15 +10,15 @@ class Shape:
 
         # Define texts and associated colors in a dictionary for better structure
         self.shape_data = {
-            'text_1': ("Mushroom", self.red),
+            'text_1': ("Mushroom", self.white),
             'text_2': ("You're a...", self.white),
-            'text_3': ("BOB", self.red),
+            'text_3': ("BOB", self.white),
             'text_4': ("Yeh", self.white),
-            'text_5': ("You", self.red),
+            'text_5': ("You", self.white),
             'text_6': ("BOB", self.white),
-            'text_7': ("Mushroom", self.red),
+            'text_7': ("Mushroom", self.white),
             'text_8': ("Love", self.white),
-            'text_9': ("You", self.red)
+            'text_9': ("You", self.white)
         }
 
     def draw(self, screen):
@@ -37,7 +37,7 @@ class Shape:
             rect_height = text_rect.height + 20  # Add some padding vertically
 
             # Draw the rectangle with dynamic size
-            pygame.draw.rect(screen, color, (self.x - rect_width // 2, self.y - rect_height // 2, rect_width, rect_height))
+            pygame.draw.ellipse(screen, color, (self.x - rect_width // 2, self.y - rect_height // 2, rect_width, rect_height))
             
             # Draw the text
             screen.blit(text_rendered, text_rect)
